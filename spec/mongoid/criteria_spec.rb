@@ -3210,7 +3210,7 @@ describe Mongoid::Criteria do
       context "when including private methods" do
 
         it "returns true" do
-          expect(criteria.respond_to?(:fork, true)).to be true
+          expect(criteria.respond_to?(:initialize_copy, true)).to be true
         end
       end
     end
