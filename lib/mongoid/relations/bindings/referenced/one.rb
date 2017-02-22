@@ -20,7 +20,7 @@ module Mongoid
           # @since 2.0.0.rc.1
           def bind_one
             binding do
-              bind_from_relational_parent(target)
+              bind_from_relational_parent(target) if target.persisted?
             end
           end
 

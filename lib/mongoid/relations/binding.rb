@@ -169,7 +169,7 @@ module Mongoid
       # @since 3.0.0
       def bind_from_relational_parent(doc)
         check_inverse!(doc)
-        bind_foreign_key(doc, record_id(base))
+        bind_foreign_key(doc, record_id(base)) if base.persisted?
         bind_polymorphic_type(doc, base.class.name)
         bind_inverse(doc, base)
       end
