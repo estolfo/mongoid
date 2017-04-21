@@ -30,6 +30,7 @@ module Mongoid
               process_attributes(parent, attrs[1].with_indifferent_access)
             end
           end
+          existing
         end
 
         # Create the new builder for nested attributes on one-to-many
@@ -118,11 +119,12 @@ module Mongoid
         #
         # @since 3.0.10
         def destroy(parent, relation, doc)
+          binding.pry
           doc.flagged_for_destroy = true
           if !doc.embedded? || parent.new_record?
-            destroy_document(relation, doc)
+            destroy_document(relation, doc, parent)
           else
-            parent.flagged_destroys.push(-> { destroy_document(relation, doc) })
+            parent.flagged_destroys.push(-> { destroy_document(relation, doc, parent) })
           end
         end
 
@@ -137,8 +139,9 @@ module Mongoid
         # @param [ Document ] doc The document to delete.
         #
         # @since 3.0.10
-        def destroy_document(relation, doc)
+        def destroy_document(relation, doc, parent)
           relation.delete(doc)
+          parent.attributes[association.name.to_s] = relation
           doc.destroy unless doc.embedded? || doc.destroyed?
         end
 
