@@ -305,6 +305,8 @@ module Mongoid
         candidates.detect { |c| c } if candidates
       end
 
+      def set_foreign_id_on_child(parent); end
+
       private
 
       def setup_index!

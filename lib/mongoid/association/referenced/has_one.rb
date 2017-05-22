@@ -155,6 +155,16 @@ module Mongoid
           Mongoid::Atomic::Paths::Root.new(document)
         end
 
+        def set_foreign_id_on_child(parent)
+          if relation = parent.send(name)
+            if relation.persisted?
+              relation.update_attribute(foreign_key, parent.send(primary_key))
+            else
+              relation.send(foreign_key_setter, parent.send(primary_key))
+            end
+          end
+        end
+
         private
 
         # Setup the instance methods on the class having this association type.

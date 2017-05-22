@@ -39,20 +39,38 @@ describe Mongoid::Association::Referenced::BelongsTo::Proxy do
         Agent.new(title: "007")
       end
 
-      let(:game) do
-        Game.new(name: "Donkey Kong")
-      end
-
       before do
         agent.game = game
       end
 
-      it "sets the relation" do
-        expect(agent.game).to eq(game)
+      context 'when the parent is persisted' do
+
+        let(:game) do
+          Game.create(name: "Donkey Kong")
+        end
+
+        it "sets the relation" do
+          expect(agent.game).to eq(game)
+        end
+
+        it "sets the foreign_key" do
+          expect(agent.game_id).to eq(game.id)
+        end
       end
 
-      it "sets the foreign_key" do
-        expect(agent.game_id).to eq(game.id)
+      context 'when the parent is not persisted' do
+
+        let(:game) do
+          Game.new(name: "Donkey Kong")
+        end
+
+        it "sets the relation" do
+          expect(agent.game).to eq(game)
+        end
+
+        it "does not set the foreign_key" do
+          expect(agent.game_id).to be_nil
+        end
       end
     end
 
@@ -109,10 +127,6 @@ describe Mongoid::Association::Referenced::BelongsTo::Proxy do
             expect(game.person.target).to eq(person)
           end
 
-          it "sets the foreign key on the relation" do
-            expect(game.person_id).to eq(person.id)
-          end
-
           it "sets the base on the inverse relation" do
             expect(person.game).to eq(game)
           end
@@ -123,6 +137,24 @@ describe Mongoid::Association::Referenced::BelongsTo::Proxy do
 
           it "does not save the target" do
             expect(person).to_not be_persisted
+          end
+
+          context 'when the parent is persisted' do
+
+            let(:person) do
+              Person.create
+            end
+
+            it "sets the foreign key on the relation" do
+              expect(game.person_id).to eq(person.id)
+            end
+          end
+
+          context 'when the parent is not persisted' do
+
+            it "does not set the foreign key on the relation" do
+              expect(game.person_id).to be_nil
+            end
           end
         end
 
@@ -144,10 +176,6 @@ describe Mongoid::Association::Referenced::BelongsTo::Proxy do
             expect(game.person.target).to eq(person)
           end
 
-          it "sets the foreign key of the relation" do
-            expect(game.person_id).to eq(person.id)
-          end
-
           it "sets the base on the inverse relation" do
             expect(person.game).to eq(game)
           end
@@ -158,6 +186,24 @@ describe Mongoid::Association::Referenced::BelongsTo::Proxy do
 
           it "does not saves the target" do
             expect(person).to_not be_persisted
+          end
+
+          context 'when the parent is persisted' do
+
+            let(:person) do
+              Person.create
+            end
+
+            it "sets the foreign key on the relation" do
+              expect(game.person_id).to eq(person.id)
+            end
+          end
+
+          context 'when the parent is not persisted' do
+
+            it "does not set the foreign key on the relation" do
+              expect(game.person_id).to be_nil
+            end
           end
         end
       end
@@ -206,10 +252,6 @@ describe Mongoid::Association::Referenced::BelongsTo::Proxy do
             expect(rating.ratable.target).to eq(bar)
           end
 
-          it "sets the foreign key on the relation" do
-            expect(rating.ratable_id).to eq(bar.id)
-          end
-
           it "sets the base on the inverse relation" do
             expect(bar.rating).to eq(rating)
           end
@@ -220,6 +262,24 @@ describe Mongoid::Association::Referenced::BelongsTo::Proxy do
 
           it "does not save the target" do
             expect(bar).to_not be_persisted
+          end
+
+          context 'when the parent is persisted' do
+
+            let(:bar) do
+              Bar.create
+            end
+
+            it "sets the foreign key on the relation" do
+              expect(rating.ratable_id).to eq(bar.id)
+            end
+          end
+
+          context 'when the parent is not persisted' do
+
+            it "does not set the foreign key on the relation" do
+              expect(rating.ratable_id).to be_nil
+            end
           end
         end
 
@@ -241,10 +301,6 @@ describe Mongoid::Association::Referenced::BelongsTo::Proxy do
             expect(rating.ratable.target).to eq(bar)
           end
 
-          it "sets the foreign key of the relation" do
-            expect(rating.ratable_id).to eq(bar.id)
-          end
-
           it "sets the base on the inverse relation" do
             expect(bar.rating).to eq(rating)
           end
@@ -255,6 +311,24 @@ describe Mongoid::Association::Referenced::BelongsTo::Proxy do
 
           it "does not saves the target" do
             expect(bar).to_not be_persisted
+          end
+
+          context 'when the parent is persisted' do
+
+            let(:bar) do
+              Bar.create
+            end
+
+            it "sets the foreign key on the relation" do
+              expect(rating.ratable_id).to eq(bar.id)
+            end
+          end
+
+          context 'when the parent is not persisted' do
+
+            it "does not set the foreign key on the relation" do
+              expect(rating.ratable_id).to be_nil
+            end
           end
         end
       end
@@ -320,12 +394,26 @@ describe Mongoid::Association::Referenced::BelongsTo::Proxy do
             expect(post.person.target).to eq(person)
           end
 
-          it "sets the foreign key on the relation" do
-            expect(post.person_id).to eq(person.id)
-          end
-
           it "does not save the target" do
             expect(person).to_not be_persisted
+          end
+
+          context 'when the parent is persisted' do
+
+            let(:person) do
+              Person.create
+            end
+
+            it "sets the foreign key on the relation" do
+              expect(post.person_id).to eq(person.id)
+            end
+          end
+
+          context 'when the parent is not persisted' do
+
+            it "does not set the foreign key on the relation" do
+              expect(post.person_id).to be_nil
+            end
           end
         end
 
@@ -347,12 +435,26 @@ describe Mongoid::Association::Referenced::BelongsTo::Proxy do
             expect(post.person.target).to eq(person)
           end
 
-          it "sets the foreign key of the relation" do
-            expect(post.person_id).to eq(person.id)
-          end
-
           it "does not saves the target" do
             expect(person).to_not be_persisted
+          end
+
+          context 'when the parent is persisted' do
+
+            let(:person) do
+              Person.create
+            end
+
+            it "sets the foreign key of the relation" do
+              expect(post.person_id).to eq(person.id)
+            end
+          end
+
+          context 'when the parent is not persisted' do
+
+            it "sets the foreign key of the relation" do
+              expect(post.person_id).to be_nil
+            end
           end
         end
       end
@@ -412,12 +514,28 @@ describe Mongoid::Association::Referenced::BelongsTo::Proxy do
               expect(rating.ratable.target).to eq(movie)
             end
 
-            it "sets the foreign key on the relation" do
-              expect(rating.ratable_id).to eq(movie.id)
-            end
 
             it "does not save the target" do
               expect(movie).to_not be_persisted
+            end
+
+            context 'when the parent is persisted' do
+
+              let(:movie) do
+                Movie.create
+              end
+
+              it "sets the foreign key on the relation" do
+                expect(rating.ratable_id).to eq(movie.id)
+              end
+            end
+
+            context 'when the parent is not persisted' do
+
+
+              it "does not the foreign key on the relation" do
+                expect(rating.ratable_id).to be_nil
+              end
             end
           end
 
@@ -439,12 +557,26 @@ describe Mongoid::Association::Referenced::BelongsTo::Proxy do
               expect(rating.ratable.target).to eq(movie)
             end
 
-            it "sets the foreign key of the relation" do
-              expect(rating.ratable_id).to eq(movie.id)
-            end
-
             it "does not saves the target" do
               expect(movie).to_not be_persisted
+            end
+
+            context 'when the parent is persisted' do
+              let(:movie) do
+                Movie.create
+              end
+
+
+              it "sets the foreign key of the relation" do
+                expect(rating.ratable_id).to eq(movie.id)
+              end
+            end
+
+            context 'when the parent is not persisted' do
+
+              it "does not set the foreign key of the relation" do
+                expect(rating.ratable_id).to be_nil
+              end
             end
           end
         end

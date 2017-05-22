@@ -3,7 +3,7 @@ require "spec_helper"
 describe Mongoid::Association::Referenced::HasOne::Binding do
 
   let(:person) do
-    Person.new
+    Person.create
   end
 
   let(:game) do
@@ -26,6 +26,23 @@ describe Mongoid::Association::Referenced::HasOne::Binding do
         expect(person).to receive(:save).never
         expect(game).to receive(:save).never
         binding.bind_one
+      end
+
+      it "sets the inverse relation" do
+        expect(game.person).to eq(person)
+      end
+
+      # it "sets the foreign key" do
+      #   expect(game.person_id).to eq(person.id)
+      # end
+    end
+
+    context 'when the document is saved' do
+
+      before do
+        expect(person).to receive(:save).never
+        binding.bind_one
+        game.save
       end
 
       it "sets the inverse relation" do

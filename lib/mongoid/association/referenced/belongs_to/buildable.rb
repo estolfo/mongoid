@@ -26,7 +26,7 @@ module Mongoid
             query_criteria(object, type).limit(-1).first(id_sort: :none)
           end
 
-          def query_criteria(object, type)
+          def query_criteria(object, type = nil)
             model = type ? type.constantize : relation_class
             model.where(primary_key => object)
           end

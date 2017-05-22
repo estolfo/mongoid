@@ -66,6 +66,12 @@ module Mongoid
       end
     end
 
+    def set_foreign_id_on_children
+      associations.values.each do |assoc|
+        assoc.set_foreign_id_on_child(self)
+      end
+    end
+
     # Determines if the document is a subclass of another document.
     #
     # @example Check if the document is a subclass

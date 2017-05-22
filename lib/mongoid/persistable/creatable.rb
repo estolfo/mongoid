@@ -93,6 +93,7 @@ module Mongoid
       def post_process_insert
         self.new_record = false
         flag_children_persisted
+        set_foreign_id_on_children
         true
       end
 

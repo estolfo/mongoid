@@ -146,7 +146,7 @@ describe Mongoid::Association::Referenced::HasOne::Eager do
       end
 
       let!(:eager) do
-        Book.all.includes(:rating).first
+        Book.where(id: book.id).includes(:rating).first
       end
 
       it "puts the found documents in the parent document" do

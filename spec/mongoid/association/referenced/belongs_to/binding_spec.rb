@@ -32,45 +32,90 @@ describe Mongoid::Association::Referenced::BelongsTo::Binding do
 
       context "when the document is bindable with default pk" do
 
-        before do
-          expect(person).to receive(:save).never
-          expect(game).to receive(:save).never
-          binding.bind_one
+        context 'when the parent is not persisted' do
+
+          before do
+            expect(person).to receive(:save).never
+            expect(game).to receive(:save).never
+            binding.bind_one
+          end
+
+          it "sets the inverse relation" do
+            expect(person.game).to eq(game)
+          end
+
+          it "does not set the foreign key" do
+            expect(game.person_id).to be_nil
+          end
         end
 
-        it "sets the inverse relation" do
-          expect(person.game).to eq(game)
-        end
+        context 'when the parent is persisted' do
 
-        it "sets the foreign key" do
-          expect(game.person_id).to eq(person.id)
+          before do
+            person.save
+            expect(game).to receive(:save).never
+            binding.bind_one
+          end
+
+          it "sets the inverse relation" do
+            expect(person.game).to eq(game)
+          end
+
+          it "sets the foreign key" do
+            expect(game.person_id).to eq(person.id)
+          end
         end
       end
 
       context "when the document is bindable with username as pk" do
 
-        before do
-          Game.belongs_to :person, index: true, validate: true, primary_key: :username
+        context 'when the parent is not persisted' do
 
-          expect(person).to receive(:save).never
-          expect(game).to receive(:save).never
-          binding.bind_one
+          before do
+            Game.belongs_to :person, index: true, validate: true, primary_key: :username
+
+            expect(person).to receive(:save).never
+            expect(game).to receive(:save).never
+            binding.bind_one
+          end
+
+          after do
+            Game.belongs_to :person, index: true, validate: true
+          end
+
+          it "sets the inverse relation" do
+            expect(person.game).to eq(game)
+          end
+
+          it "does not set the foreign key" do
+            expect(game.person_id).to be_nil
+          end
         end
 
-        after do
-          Game.belongs_to :person, index: true, validate: true
-        end
+        context 'when the parent is persisted' do
 
-        it "sets the inverse relation" do
-          expect(person.game).to eq(game)
-        end
+          before do
+            Game.belongs_to :person, index: true, validate: true, primary_key: :username
+            person.save
+            expect(game).to receive(:save).never
+            binding.bind_one
+          end
 
-        let(:person) do
-          Person.new(username: 'arthurnn')
-        end
+          after do
+            Game.belongs_to :person, index: true, validate: true
+          end
 
-        it "sets the fk with username field" do
-          expect(game.person_id).to eq(person.username)
+          it "sets the inverse relation" do
+            expect(person.game).to eq(game)
+          end
+
+          let(:person) do
+            Person.new(username: 'arthurnn')
+          end
+
+          it "sets the fk with username field" do
+            expect(game.person_id).to eq(person.username)
+          end
         end
       end
 
@@ -95,19 +140,40 @@ describe Mongoid::Association::Referenced::BelongsTo::Binding do
 
       context "when the document is bindable" do
 
-        before do
-          expect(person).to receive(:save).never
-          expect(post).to receive(:save).never
-          binding.bind_one
+        context 'when the parent is persisted' do
+
+          before do
+            expect(person).to receive(:save).never
+            expect(post).to receive(:save).never
+            binding.bind_one
+          end
+
+          it "sets the inverse relation" do
+            expect(person.posts).to include(post)
+          end
+
+          it "does not set the foreign key" do
+            expect(post.person_id).to be_nil
+          end
         end
 
-        it "sets the inverse relation" do
-          expect(person.posts).to include(post)
+        context 'when the parent is not persisted' do
+
+          before do
+            person.save
+            expect(post).to receive(:save).never
+            binding.bind_one
+          end
+
+          it "sets the inverse relation" do
+            expect(person.posts).to include(post)
+          end
+
+          it "sets the foreign key" do
+            expect(post.person_id).to eq(person.id)
+          end
         end
 
-        it "sets the foreign key" do
-          expect(post.person_id).to eq(person.id)
-        end
       end
 
       context "when the document is not bindable" do
@@ -218,7 +284,7 @@ describe Mongoid::Association::Referenced::BelongsTo::Binding do
   context "when unbinding frozen documents" do
 
     let(:person) do
-      Person.new
+      Person.create
     end
 
     context "when the child is frozen" do
