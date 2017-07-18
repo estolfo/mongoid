@@ -7,6 +7,7 @@ require "mongoid/criteria/modifiable"
 require "mongoid/criteria/queryable"
 require "mongoid/criteria/scopable"
 require "mongoid/criteria/options"
+require "mongoid/criteria/aggregation"
 
 module Mongoid
 
@@ -435,6 +436,10 @@ module Mongoid
     # @since 3.1.0
     def for_js(javascript, scope = {})
       js_query(BSON::CodeWithScope.new(javascript, scope))
+    end
+
+    def aggregate(pipeline = [], options = {})
+      Aggregation.new(self, pipeline, options)
     end
 
     private

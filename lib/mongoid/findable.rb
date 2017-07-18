@@ -14,6 +14,7 @@ module Mongoid
     # directly from the class level.
     delegate \
       :aggregates,
+      :aggregate,
       :avg,
       :create_with,
       :distinct,
@@ -53,6 +54,10 @@ module Mongoid
     # @return [ Integer ] The number of matching documents.
     def count
       with_default_scope.count
+    end
+
+    def aggregate(pipeline = [], options = {})
+      queryable.aggregate(pipeline, options)
     end
 
     # Returns true if count is zero
