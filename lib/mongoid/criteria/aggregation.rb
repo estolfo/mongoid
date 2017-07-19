@@ -15,7 +15,6 @@ module Mongoid
           sample: '$sample',
           sort: '$sort',
           geo_near: '$geoNear',
-          lookup: '$lookup',
           out: '$out',
           index_stats: '$indexStats',
           facet: '$facet',
@@ -66,19 +65,64 @@ module Mongoid
       end
 
       def model_results!
+        #raise error if there is a lookup operator
         new(pipeline, options.merge(raw_results: false))
+      end
+
+      def lookup(relation, doc = {})
+        if relation
+          association = criteria.klass.relations[relation]
+          @options = @options.merge(association: association)
+          lookup_spec = make_lookup_spec(association).merge!(doc)
+        elsif raw_results
+          lookup_spec = doc
+        else
+          #raise error
+        end
+        configure('$lookup', lookup_spec)
       end
 
       def each
         raw_results = options.delete(:raw_results)
+        association = options.delete(:association)
         view = @criteria.collection.aggregate(pipeline, options)
+
         return to_enum unless block_given?
         view.each do |doc|
-          yield(raw_results ? doc : Factory.from_db(criteria.klass, doc))
+          if raw_results
+            yield(doc)
+          else
+            if lookup_as
+              as = doc.delete(lookup_as)
+              model = Factory.from_db(criteria.klass, doc)
+              as.each do |association_doc|
+                klass = association.klass
+                obj = Factory.from_db(klass, association_doc)
+                obj.send(association.inverse_setter, model)
+              end
+            else
+              model = Factory.from_db(criteria.klass, doc)
+            end
+            yield(model)
+          end
         end
       end
 
       private
+
+      def make_lookup_spec(association)
+        {
+          from: association.klass.collection_name.to_s,
+          localField: association.primary_key,
+          foreignField: association.foreign_key,
+          as: association.name.to_s
+        }
+      end
+
+      def lookup_as
+        lookup_operator = @pipeline.find { |operator|  operator['$lookup'] }
+        lookup_operator['$lookup'][:as]
+      end
 
       def new(pipeline, options)
         Aggregation.new(criteria, pipeline, options)

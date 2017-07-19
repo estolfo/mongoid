@@ -442,6 +442,10 @@ module Mongoid
       Aggregation.new(self, pipeline, options)
     end
 
+    def lookup(relation, lookup_doc = {})
+      aggregate(selector.to_pipeline).lookup(relation, lookup_doc)
+    end
+
     private
 
     # Are documents in the query missing, and are we configured to raise an
