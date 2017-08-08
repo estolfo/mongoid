@@ -53,7 +53,7 @@ module Mongoid
       def initialize(criteria, pipeline, options = {})
         @criteria = criteria
         @pipeline = pipeline.dup
-        @options = BSON::Document.new(options)
+        @options = BSON::Document.new(options).freeze
       end
 
       def set_option(option)
@@ -83,8 +83,8 @@ module Mongoid
       end
 
       def each
-        raw_results = options.delete(:raw_results)
-        association = options.delete(:association)
+        raw_results = options[:raw_results]
+        association = options[:association]
         view = @criteria.collection.aggregate(pipeline, options)
 
         return to_enum unless block_given?
@@ -120,8 +120,9 @@ module Mongoid
       end
 
       def lookup_as
-        lookup_operator = @pipeline.find { |operator|  operator['$lookup'] }
-        lookup_operator['$lookup'][:as]
+        if lookup_operator = @pipeline.find { |operator|  operator['$lookup'] }
+          lookup_operator['$lookup'][:as]
+        end
       end
 
       def new(pipeline, options)
